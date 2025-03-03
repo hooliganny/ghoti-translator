@@ -1,7 +1,127 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+@inject IJSRuntime JSRuntime
 
-<h1>Hello, world!</h1>
+<PageTitle>Ghoti Translator</PageTitle>
 
-Welcome to your new app.
+<h1>Ghoti Translator</h1>
+
+<textarea @bind="InputText" placeholder="Enter text to translate"></textarea>
+
+<button @onclick="Translate">Translate</button>
+
+<h2>Translation</h2>
+
+<div id="translated-text-container">
+    <textarea readonly id="translated-text">
+        @TranslatedText
+    </textarea>
+
+    <button class="copy-button" @onclick="CopyToClipboard">Copy</button>
+</div>
+
+
+@* Idea/TODO: consider making this hoverable/highlightable as a pop-up word by word in the translated text section above *@
+@if (TranslatedText.Length > 0) {
+    <div>
+        <h3>Spelling rules used</h3>
+
+        @if (usedRules.Count == 0)
+        {
+            <p>No conversion rules used</p>
+        } 
+        
+        else {
+            <ul>
+                @* TODO: work on how this is shown, make it easier to show either way of the translation *@
+                @foreach (var rule in usedRules) {
+                    if (spellingRules.ContainsKey(rule) && pronunciationRules.ContainsKey(rule)) {
+                        <li><span>@rule</span>  <span>@pronunciationRules[rule]</span></li>
+                    }
+                    else if (spellingRules.ToDictionary(x => x.Value, x => x.Key).ContainsKey(rule)) {
+                        <li><span>@rule</span>  <span>@pronunciationRules[spellingRules.ToDictionary(x => x.Value, x => x.Key)[rule]]</span></li>
+                    }
+                }
+            </ul>
+        }
+    </div>
+}
+
+<h4>Explanation/Disclaimer:</h4>
+<p>
+    This is a fun project to demonstrate how the English language can be confusing. The rules used here are not exhaustive and are not accurate in many cases.
+    <br>
+    This is because normally the 'ghoti' rules are based off IPA sounds, not spelling. Maybe This will be added in the future...
+</p>
+
+@code {
+    private string InputText { get; set; } = string.Empty;
+    private string TranslatedText { get; set; } = string.Empty;
+
+    private HashSet<string> usedRules = new HashSet<string>();
+
+    @* TODO: expand on this list *@
+    private Dictionary<string, string> spellingRules = new Dictionary<string, string>
+    {
+        { "gh", "f" },
+        { "o", "i" },
+        { "ti", "sh" }
+    };
+
+
+    @* TODO: expand on this list, find out if it necessarily works both ways? *@
+    @* TODO: make this work for when accessed via reversed spellingRules (see else if statement in "Spelling rules used" section) *@
+    private Dictionary<string, string> pronunciationRules = new Dictionary<string, string>
+        {
+            { "gh", "becomes the \"f\" sound in \"enough\"" },
+            { "o", "becomes the \"i\" sound in \"women\"" },
+            { "ti", "becomes the \"sh\" sound in \"nation\"" }
+        };
+
+     private void Translate()
+    {
+        TranslatedText = string.Empty;
+        int i = 0;
+
+        // Create a reverse mapping for bidirectional translation
+        Dictionary<string, string> reverseRules = spellingRules.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
+
+        usedRules.Clear();
+
+        while (i < InputText.Length)
+        {
+            bool matched = false;
+
+            // Check both dictionaries for longest matches first
+            foreach (var rule in spellingRules.Concat(reverseRules).OrderByDescending(r => r.Key.Length))
+            {
+                if (i + rule.Key.Length <= InputText.Length && InputText.Substring(i, rule.Key.Length) == rule.Key)
+                {
+                    TranslatedText += rule.Value;
+                    usedRules.Add(rule.Key);
+                    i += rule.Key.Length; // Skip past the matched sequence
+                    matched = true;
+                    break;
+                }
+            }
+
+            // If no match found, just add the current character
+            if (!matched)
+            {
+                TranslatedText += InputText[i];
+                i++;
+            }
+        }
+
+        Console.WriteLine($"Translated text: {TranslatedText}, from original: {InputText}");
+
+        Console.WriteLine("Spelling rules used: {0}", String.Join(',', usedRules));
+        
+    }
+
+    private void CopyToClipboard()
+    {
+        Console.WriteLine("Copying to clipboard");
+        Console.WriteLine(JSRuntime.InvokeVoidAsync("CopyToClipboard.copyToClipboard", TranslatedText));
+    }
+}

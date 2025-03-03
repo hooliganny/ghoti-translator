@@ -122,3 +122,17 @@ code {
 .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+#translated-text-container {
+  position: relative;
+}
+
+#translated-text {
+  width: 100%;
+}
+
+.copy-button {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
