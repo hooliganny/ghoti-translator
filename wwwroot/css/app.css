@@ -1,6 +1,9 @@
 html,
 body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #4d679b, #198754);
+  color: #ffffff;
 }
 
 h1:focus {
@@ -9,7 +12,7 @@ h1:focus {
 
 a,
 .btn-link {
-  color: #0071c1;
+  color: rgb(0, 241, 255);
 }
 
 .btn-primary {
@@ -121,14 +124,6 @@ code {
 .form-floating > .form-control-plaintext:focus::placeholder,
 .form-floating > .form-control:focus::placeholder {
   text-align: start;
-}
-
-#translated-text-container {
-  position: relative;
-}
-
-#translated-text {
-  width: 100%;
 }
 
 .copy-button {

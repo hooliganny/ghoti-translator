@@ -4,20 +4,21 @@
 
 <PageTitle>Ghoti Translator</PageTitle>
 
-<h1>Ghoti Translator</h1>
+<h1 class="text-center">Ghoti Translator</h1>
 
-<textarea @bind="InputText" placeholder="Enter text to translate"></textarea>
+<div class="form-group">
+    <h2>Input</h2>
 
-<button @onclick="Translate">Translate</button>
+    <textarea @bind="InputText" placeholder="Enter text to translate" class="form-control mb-2"></textarea>
+    <button @onclick="Translate" class="btn btn-primary">Translate</button>
+</div>
 
-<h2>Translation</h2>
 
-<div id="translated-text-container">
-    <textarea readonly id="translated-text">
-        @TranslatedText
-    </textarea>
+<div class="form-group">
+    <h2>Translation</h2>
 
-    <button class="copy-button" @onclick="CopyToClipboard">Copy</button>
+    <textarea @bind="TranslatedText" placeholder="Translated result will go here" readonly class="form-control mb-2"></textarea>
+    <button @onclick="CopyToClipboard" class="btn btn-dark">Copy</button>
 </div>
 
 
@@ -47,12 +48,21 @@
     </div>
 }
 
-<h4>Explanation/Disclaimer:</h4>
-<p>
-    This is a fun project to demonstrate how the English language can be confusing. The rules used here are not exhaustive and are not accurate in many cases.
-    <br>
-    This is because normally the 'ghoti' rules are based off IPA sounds, not spelling. Maybe This will be added in the future...
-</p>
+<div>
+    <h4>Explanation/Disclaimer:</h4>
+    <p>
+        This is a fun project to demonstrate how the English language can be confusing. The rules used here are not exhaustive and are not accurate in many cases.
+        This is because normally the 'ghoti' rules are based off IPA sounds, not English spelling. Maybe this will be added in the future...
+    </p>
+
+    <p class="mt-2">
+        For more reading, see the below resources:
+        <ul>
+            <li><a href="https://en.wikipedia.org/wiki/Ghoti" target="_blank">Wikipedia - Ghoti</a></li>
+            <li><a href="https://www.youtube.com/watch?v=3ipFdRfFvK4" target="_blank">Vsauce - Forbidden Spellings</a></li>
+        </ul>
+    </p>
+</div>
 
 @code {
     private string InputText { get; set; } = string.Empty;
