@@ -23,7 +23,8 @@
 
 
 @* Idea/TODO: consider making this hoverable/highlightable as a pop-up word by word in the translated text section above *@
-@if (TranslatedText.Length > 0) {
+@if (TranslatedText.Length > 0) 
+{
     <div>
         <h3>Spelling rules used</h3>
 
@@ -32,15 +33,15 @@
             <p>No conversion rules used</p>
         } 
         
-        else {
+        else 
+        {
             <ul>
                 @* TODO: work on how this is shown, make it easier to show either way of the translation *@
-                @foreach (var rule in usedRules) {
-                    if (spellingRules.ContainsKey(rule) && pronunciationRules.ContainsKey(rule)) {
-                        <li><span>@rule</span>  <span>@pronunciationRules[rule]</span></li>
-                    }
-                    else if (spellingRules.ToDictionary(x => x.Value, x => x.Key).ContainsKey(rule)) {
-                        <li><span>@rule</span>  <span>@pronunciationRules[spellingRules.ToDictionary(x => x.Value, x => x.Key)[rule]]</span></li>
+                @foreach (var rule in usedRules) 
+                {
+                    @if (@Rules.Pronunciation.ContainsKey(rule.original) && @Rules.Pronunciation[rule.original].ContainsKey(rule.transformed))
+                    {
+                        <li>@rule.original → @rule.transformed (@Rules.Pronunciation[rule.original][rule.transformed])</li>
                     }
                 }
             </ul>
@@ -52,7 +53,7 @@
     <h4>Explanation/Disclaimer:</h4>
     <p>
         This is a fun project to demonstrate how the English language can be confusing. The rules used here are not exhaustive and are not accurate in many cases.
-        This is because normally the 'ghoti' rules are based off IPA sounds, not English spelling. Maybe this will be added in the future...
+        This is because normally the 'ghoti' rules are based off phonemes, not English spelling. Maybe this will be added in the future...
     </p>
 
     <p class="mt-2">
@@ -60,6 +61,7 @@
         <ul>
             <li><a href="https://en.wikipedia.org/wiki/Ghoti" target="_blank">Wikipedia - Ghoti</a></li>
             <li><a href="https://www.youtube.com/watch?v=3ipFdRfFvK4" target="_blank">Vsauce - Forbidden Spellings</a></li>
+            <li><a href="https://www.readingrockets.org/sites/default/files/migrated/the-44-phonemes-of-english.pdf"- target="_blank">Reading Rockets - The 44 Sounds (Phonemes) of English</a></li>
         </ul>
     </p>
 </div>
@@ -68,33 +70,16 @@
     private string InputText { get; set; } = string.Empty;
     private string TranslatedText { get; set; } = string.Empty;
 
-    private HashSet<string> usedRules = new HashSet<string>();
-
-    @* TODO: expand on this list *@
-    private Dictionary<string, string> spellingRules = new Dictionary<string, string>
-    {
-        { "gh", "f" },
-        { "o", "i" },
-        { "ti", "sh" }
-    };
-
-
-    @* TODO: expand on this list, find out if it necessarily works both ways? *@
-    @* TODO: make this work for when accessed via reversed spellingRules (see else if statement in "Spelling rules used" section) *@
-    private Dictionary<string, string> pronunciationRules = new Dictionary<string, string>
-        {
-            { "gh", "becomes the \"f\" sound in \"enough\"" },
-            { "o", "becomes the \"i\" sound in \"women\"" },
-            { "ti", "becomes the \"sh\" sound in \"nation\"" }
-        };
-
+    private List<(string original, string transformed)> usedRules = new List<(string, string)>();
      private void Translate()
     {
         TranslatedText = string.Empty;
+        Random random = new Random();
         int i = 0;
 
+        @* todo: come back to this - work out a way so that it tries multiple letter phonemes just as likely as it tries single letter phonemes (i.e. fish -> fice, and also fish -> fissh) *@
         // Create a reverse mapping for bidirectional translation
-        Dictionary<string, string> reverseRules = spellingRules.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
+        @* Dictionary<string, string> reverseRules = spellingRules.ToDictionary(kvp => kvp.Value, kvp => kvp.Key); *@
 
         usedRules.Clear();
 
@@ -102,20 +87,29 @@
         {
             bool matched = false;
 
-            // Check both dictionaries for longest matches first
-            foreach (var rule in spellingRules.Concat(reverseRules).OrderByDescending(r => r.Key.Length))
+            // Check both dictionaries, prioritizing longest matches
+            // .Concat(reverseRules).OrderByDescending(r => r.Key.Length)
+            foreach (var ruleSet in Rules.Spelling)
             {
-                if (i + rule.Key.Length <= InputText.Length && InputText.Substring(i, rule.Key.Length) == rule.Key)
+                if (i + ruleSet.Key.Length <= InputText.Length && InputText.Substring(i, ruleSet.Key.Length) == ruleSet.Key)
                 {
-                    TranslatedText += rule.Value;
-                    usedRules.Add(rule.Key);
-                    i += rule.Key.Length; // Skip past the matched sequence
+                    // Get a random transformation from the available options
+                    string replacement = ruleSet.Value.ElementAt(random.Next(ruleSet.Value.Count));
+
+                    TranslatedText += replacement;
+
+                    // Store the applied rule for reference
+                    @* usedRules[ruleSet.Key] = replacement; *@
+                    usedRules.Add((ruleSet.Key, replacement));
+
+                    // Advance by the length of the matched key
+                    i += ruleSet.Key.Length;
                     matched = true;
                     break;
                 }
             }
 
-            // If no match found, just add the current character
+            // If no match found, add the current character and move forward
             if (!matched)
             {
                 TranslatedText += InputText[i];
@@ -123,15 +117,13 @@
             }
         }
 
-        Console.WriteLine($"Translated text: {TranslatedText}, from original: {InputText}");
-
-        Console.WriteLine("Spelling rules used: {0}", String.Join(',', usedRules));
+        @* Console.WriteLine($"Translated text: {TranslatedText}, from original: {InputText}");
+        Console.WriteLine("Spelling rules used: {0}", String.Join(',', usedRules)); *@
         
     }
 
     private void CopyToClipboard()
     {
-        Console.WriteLine("Copying to clipboard");
-        Console.WriteLine(JSRuntime.InvokeVoidAsync("CopyToClipboard.copyToClipboard", TranslatedText));
+        JSRuntime.InvokeVoidAsync("CopyToClipboard.copyToClipboard", TranslatedText);
     }
 }

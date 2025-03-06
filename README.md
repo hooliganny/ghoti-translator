@@ -1,21 +1,21 @@
 # Ghoti Translator
 
-Ghoti Translator is a simple Blazor WebAssembly application that takes user input and transforms it into an idiosyncratic spelling based on phonetic rules, similar to how "ghoti" can represent "fish".
+Ghoti Translator is a simple Blazor WebAssembly application that takes user input and transforms it into an idiosyncratic spelling - based loosely on the fact that English is an inconsistent language that has many ways of spelling the same phonemes - i.e. how "fish" can be spelt as "ghoti", as 'gh' can be an "f" sound (think "enough"), "o" can be an "i" sound (think "women"), and "ti" can be an "sh" sound (think "nation").
 
-## Core Features (WIP)
+## Core Features
 
 - Enter any text into a textarea
-- The app converts the input to an alternative spelling
+- The app converts the input to an alternative, "ghoti"-ised spelling
 
 ## TODO/Future Improvements
 
-- Improve phonetic transformation rules for better accuracy
-- Allow users to add to/select different phonetic mapping styles
+- Improve phonetic-based transformation rules for better accuracy
+- Allow users to add/select different phonetic rules that are potentially missing
 
 # Tech Stuff
 
 - Built with Blazor WebAssembly for fast, client-side rendering (and an excuse to learn C#/Blazor/WASM)
-- Deployed as a static site via GitHub Pages
+- Deployed as a static site via GitHub Actions and GitHub Pages
 
 ## Installation
 
