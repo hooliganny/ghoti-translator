@@ -77,10 +77,6 @@
         Random random = new Random();
         int i = 0;
 
-        @* todo: come back to this - work out a way so that it tries multiple letter phonemes just as likely as it tries single letter phonemes (i.e. fish -> fice, and also fish -> fissh) *@
-        // Create a reverse mapping for bidirectional translation
-        @* Dictionary<string, string> reverseRules = spellingRules.ToDictionary(kvp => kvp.Value, kvp => kvp.Key); *@
-
         usedRules.Clear();
 
         while (i < InputText.Length)
@@ -88,10 +84,9 @@
             bool matched = false;
 
             // Check both dictionaries, prioritizing longest matches
-            // .Concat(reverseRules).OrderByDescending(r => r.Key.Length)
-            foreach (var ruleSet in Rules.Spelling)
+            foreach (var ruleSet in Rules.Spelling.OrderByDescending(r => r.Key.Length))
             {
-                if (i + ruleSet.Key.Length <= InputText.Length && InputText.Substring(i, ruleSet.Key.Length) == ruleSet.Key)
+                if (i + ruleSet.Key.Length <= InputText.Length && InputText.Substring(i, ruleSet.Key.Length).ToLower() == ruleSet.Key.ToLower())
                 {
                     // Get a random transformation from the available options
                     string replacement = ruleSet.Value.ElementAt(random.Next(ruleSet.Value.Count));
@@ -99,8 +94,7 @@
                     TranslatedText += replacement;
 
                     // Store the applied rule for reference
-                    @* usedRules[ruleSet.Key] = replacement; *@
-                    usedRules.Add((ruleSet.Key, replacement));
+                    usedRules.Add((ruleSet.Key.ToLower(), replacement));
 
                     // Advance by the length of the matched key
                     i += ruleSet.Key.Length;
